@@ -1,0 +1,15 @@
+{
+	"manifest_version": 2,
+	"name": "Copy Links From Selection",
+	"version": "1.0",
+	"description": "Extract links from selected text and copy them to clipboard.",
+	"permissions": [
+		"contextMenus",
+		"activeTab",
+		"clipboardWrite",
+		"notifications"
+	],
+	"background": {
+		"scripts": ["background.js"]
+	}
+}
