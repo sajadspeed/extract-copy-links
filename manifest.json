@@ -1,6 +1,6 @@
 {
 	"manifest_version": 2,
-	"name": "Copy Links From Selection",
+	"name": "Extract & Copy Links",
 	"version": "1.0",
 	"description": "Extract links from selected text and copy them to clipboard.",
 	"permissions": [
@@ -10,7 +10,28 @@
 		"notifications",
 		"storage"
 	],
+	"icons": {
+		"16": "icons/icon16.png",
+		"48": "icons/icon48.png",
+		"128": "icons/icon128.png"
+	},
+	"browser_action": {
+		"default_icon": {
+			"16": "icons/icon16.png",
+			"48": "icons/icon48.png",
+			"128": "icons/icon128.png"
+		}
+	},
 	"background": {
 		"scripts": ["background.js"]
+	},
+	"browser_specific_settings": {
+		"gecko": {
+			"id": "extract-copy-links@sajadspeed",
+			"data_collection_permissions": {
+				"not_using_third_party": true,
+				"required": ["none"]
+			}
+		}
 	}
 }

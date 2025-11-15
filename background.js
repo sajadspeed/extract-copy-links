@@ -1,7 +1,7 @@
 // Create context menu
 browser.contextMenus.create({
 	id: "copy-links",
-	title: "Copy links from selection",
+	title: "Extract && Copy links",
 	contexts: ["selection"],
 });
 
@@ -44,14 +44,7 @@ browser.contextMenus.onClicked.addListener(async (info, tab) => {
 		}
 
 		// Store links in storage
-		const textToCopy = links.join("\\n");
-
-		browser.notifications.create({
-			type: "basic",
-			iconUrl: browser.runtime.getURL("icons/link-48.png"),
-			title: "LOGSSSS",
-			message: textToCopy,
-		});
+		const textToCopy = links.join("\n");
 
 		await browser.storage.local.set({ linksToCopy: textToCopy });
 
@@ -93,7 +86,7 @@ browser.contextMenus.onClicked.addListener(async (info, tab) => {
 		});
 
 		// Wait for result from content script
-		const result = await new Promise((resolve) => {
+		await new Promise((resolve) => {
 			const timeout = setTimeout(() => resolve(false), 2000);
 
 			const handleMessage = (request, sender, sendResponse) => {
@@ -107,16 +100,12 @@ browser.contextMenus.onClicked.addListener(async (info, tab) => {
 			browser.runtime.onMessage.addListener(handleMessage);
 		});
 
-		if (result) {
-			browser.notifications.create({
-				type: "basic",
-				iconUrl: browser.runtime.getURL("icons/link-48.png"),
-				title: "Copied!",
-				message: links.length + " links copied to clipboard.",
-			});
-		} else {
-			throw new Error("Copy failed");
-		}
+		browser.notifications.create({
+			type: "basic",
+			iconUrl: browser.runtime.getURL("icons/link-48.png"),
+			title: "Copied!",
+			message: links.length + " links copied to clipboard.",
+		});
 	} catch (error) {
 		browser.notifications.create({
 			type: "basic",
