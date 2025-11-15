@@ -5,6 +5,38 @@ browser.contextMenus.create({
 	contexts: ["selection"],
 });
 
+// Function to copy text using temporary tab
+async function copyToClipboard(text) {
+	// Create a temporary background tab
+	const tab = await browser.tabs.create({
+		url: "about:blank",
+		active: false,
+	});
+
+	try {
+		// Execute copy command in the temporary tab
+		await browser.tabs.executeScript(tab.id, {
+			code: `
+        const ta = document.createElement("textarea");
+        ta.value = ${JSON.stringify(text)};
+        document.body.appendChild(ta);
+        ta.select();
+        const success = document.execCommand("copy");
+        ta.remove();
+        success;
+      `,
+		});
+
+		return true;
+	} catch (error) {
+		console.error("Copy failed:", error);
+		return false;
+	} finally {
+		// Close the temporary tab
+		await browser.tabs.remove(tab.id);
+	}
+}
+
 browser.contextMenus.onClicked.addListener(async (info, tab) => {
 	if (info.menuItemId !== "copy-links") return;
 
@@ -35,18 +67,6 @@ browser.contextMenus.onClicked.addListener(async (info, tab) => {
           }
         });
 
-        // Copy result
-        if (out.length > 0) {
-          const ta = document.createElement("textarea");
-          ta.value = out.join("\\n");
-          ta.style.position = "fixed";
-          ta.style.left = "-9999px";
-          document.body.appendChild(ta);
-          ta.select();
-          document.execCommand("copy");
-          ta.remove();
-        }
-
         return out;
       })();
     `,
@@ -65,7 +85,28 @@ browser.contextMenus.onClicked.addListener(async (info, tab) => {
 	browser.notifications.create({
 		type: "basic",
 		iconUrl: browser.runtime.getURL("icons/link-48.png"),
-		title: "Copied!",
-		message: result.length + " links copied to clipboard.",
+		title: "No links found",
+		message: result.join(""),
 	});
+	console.log(result);
+
+	// Copy using temporary tab
+	const textToCopy = result.join("\n");
+	const success = await copyToClipboard(textToCopy);
+
+	if (success) {
+		browser.notifications.create({
+			type: "basic",
+			iconUrl: browser.runtime.getURL("icons/link-48.png"),
+			title: "Copied!",
+			message: result.length + " links copied to clipboard.",
+		});
+	} else {
+		browser.notifications.create({
+			type: "basic",
+			iconUrl: browser.runtime.getURL("icons/link-48.png"),
+			title: "Copy failed",
+			message: "Failed to copy links to clipboard.",
+		});
+	}
 });
